@@ -44,7 +44,7 @@ const $=id=>document.getElementById(id);
 const val=id=>Math.max(0,Number($(id).value)||0);
 const format=(x,d=2)=>Number.isFinite(x)?x.toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
 const today=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
-const parseLocal=value=>{if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(value||''))return null;const [y,m,d]=value.split('-').map(Number);const date=new Date(y,m-1,d,12);return date.getFullYear()===y&&date.getMonth()===m-1&&date.getDate()===d?date:null};
+const parseLocal=value=>{if(!value||value.length!==10||value[4]!=='-'||value[7]!=='-')return null;const [y,m,d]=value.split('-').map(Number);const date=new Date(y,m-1,d,12);return date.getFullYear()===y&&date.getMonth()===m-1&&date.getDate()===d?date:null};
 const displayDate=date=>new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'numeric',month:'short'}).format(date);
 const dateItems=()=>{const base=parseLocal($('purchaseDate').value);return base?Array.from({length:7},(_,i)=>{const date=new Date(base);date.setDate(base.getDate()+i);return date}):[]};
 let edits={};let report='';
@@ -71,7 +71,7 @@ function calculate(){
  $('weeklyMilesBudget').textContent=format(weeklyTemplateMiles,0)+' mi';
  $('weeklyLitres').textContent=format(weeklyLitres)+' L';
  $('weeklyCost').textContent='£'+format(weeklyCost);$('monthlyCost').textContent='£'+format(monthlyCost);
- report='Diesel Consumption Calculator v1.7\\nRefill date: '+($('purchaseDate').value||'Not entered')+'\\nPurchased: '+format(litres)+' L; range added: '+format(range,0)+' mi\\n'+dates.map((date,i)=>displayDate(date)+': '+format(dailyMiles[i],1)+' mi; remaining: '+format(remaining[i],1)+' mi').join('\\n')+'\\n7-day planned mileage: '+format(plannedMiles,1)+' mi\\nTypical weekly fuel spend: £'+format(weeklyCost)+'\\nTypical monthly fuel spend: £'+format(monthlyCost);
+ report='Diesel Consumption Calculator v1.7\nRefill date: '+($('purchaseDate').value||'Not entered')+'\nPurchased: '+format(litres)+' L; range added: '+format(range,0)+' mi\n'+dates.map((date,i)=>displayDate(date)+': '+format(dailyMiles[i],1)+' mi; remaining: '+format(remaining[i],1)+' mi').join('\n')+'\n7-day planned mileage: '+format(plannedMiles,1)+' mi\nTypical weekly fuel spend: £'+format(weeklyCost)+'\nTypical monthly fuel spend: £'+format(monthlyCost);
 }
 $('purchaseDate').value=today();
 $('purchaseDate').addEventListener('input',()=>{edits={};mileageRows();calculate()});
