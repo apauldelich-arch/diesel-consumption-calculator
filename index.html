@@ -12,7 +12,7 @@
 </head>
 <body>
   <main>
-    <header><div class="logo"><div class="fuel">⛽</div><div><h1>My Diesel Calculator</h1><p>Fuel &amp; commuting cost planner</p></div></div><div class="version">v1.8</div></header>
+    <header><div class="logo"><div class="fuel">⛽</div><div><h1>My Diesel Calculator</h1><p>Fuel &amp; commuting cost planner</p></div></div><div class="version">v1.9</div></header>
     <section>
       <h2>1. Today's Diesel Refill</h2>
       <div class="grid"><div><label for="price">Price per litre (£)</label><input id="price" type="number" min="0" step="0.001" value="2.009"></div><div><label for="spend">Amount paid (£)</label><input id="spend" type="number" min="0" step="0.01" value="20.55"></div></div><div style="margin-top:13px"><label for="purchaseDate">Fuel purchase date</label><input id="purchaseDate" type="date"></div>
@@ -32,9 +32,9 @@
     </section>
     <section>
       <h2>4. Your Fuel Budget</h2>
-      <table class="budget"><tbody><tr><td>Average cost per driving day</td><td id="dailyCost"></td></tr><tr><td>Typical weekly miles</td><td id="weeklyMilesBudget"></td></tr><tr><td>Weekly diesel required</td><td id="weeklyLitres"></td></tr><tr class="emph"><td>Typical weekly estimated spend</td><td id="weeklyCost"></td></tr><tr class="emph"><td>Typical monthly estimated spend</td><td id="monthlyCost"></td></tr></tbody></table>
+      <table class="budget"><tbody><tr><td>Average cost per driving day</td><td id="dailyCost"></td></tr><tr><td>Planned Miles (Next 7 Days)</td><td id="weeklyMilesBudget"></td></tr><tr><td>Diesel required (Next 7 Days)</td><td id="weeklyLitres"></td></tr><tr class="emph"><td>Estimated spend (Next 7 Days)</td><td id="weeklyCost"></td></tr><tr class="emph"><td>Estimated monthly spend (if repeated)</td><td id="monthlyCost"></td></tr></tbody></table>
     </section>
-    <button class="primary" id="copy">Copy Calculation</button><div class="end"><button id="reset">↺ Reset Defaults</button><small>v1.8 · No data logging</small></div><small>This calculator estimates the range represented by a purchase, not your tank's remaining range. Fuel use and refill timing may vary.</small>
+    <button class="primary" id="copy">Copy Calculation</button><div class="end"><button id="reset">↺ Reset Defaults</button><small>v1.9 · No data logging</small></div><small>This calculator estimates the range represented by a purchase, not your tank's remaining range. Fuel use and refill timing may vary.</small>
   </main>
 <script>
 const dayIds=['mon','tue','wed','thu','fri','sat','sun'];
@@ -53,7 +53,7 @@ function calculate(){
  const price=val('price'),spend=val('spend'),cons=val('cons'),dates=dateItems();
  const dailyMiles=dates.map((date,i)=>val('day'+i)),plannedMiles=dailyMiles.reduce((a,b)=>a+b,0);
  const litres=price>0?spend/price:0,valid=price>0&&cons>0&&dates.length===7,range=valid?litres*100/cons/1.609344:0;
- const weeklyTemplateMiles=defaults.reduce((a,b)=>a+b,0),weeklyLitres=weeklyTemplateMiles*1.609344*cons/100,weeklyCost=weeklyLitres*price,monthlyCost=weeklyCost*52/12;
+ const weeklyLitres=plannedMiles*1.609344*cons/100,weeklyCost=weeklyLitres*price,monthlyCost=weeklyCost*52/12;
  const plannedLitres=plannedMiles*1.609344*cons/100,plannedCost=plannedLitres*price,activeDays=dailyMiles.filter(x=>x>0).length;
  let cumulative=0,complete=0,firstOver=-1;
  const remaining=dailyMiles.map((m,i)=>{cumulative+=m;if(valid&&firstOver<0&&cumulative>range+1e-8)firstOver=i;if(valid&&firstOver<0)complete++;return range-cumulative});
@@ -70,10 +70,10 @@ function calculate(){
  if(valid&&firstOver>=0){warning.hidden=false;warning.textContent='Refuel before '+displayDate(dates[firstOver])+': the planned mileage exceeds the estimated range added by this purchase.'}else warning.hidden=true;
  $('schedule').innerHTML=dates.map((date,i)=>'<tr class="'+(valid&&remaining[i]<0?'over':'')+'"><td>'+displayDate(date)+'</td><td>'+format(dailyMiles[i],1)+' mi</td><td>'+format(dailyMiles.slice(0,i+1).reduce((a,b)=>a+b,0),1)+' mi</td><td>'+(valid?format(remaining[i],1)+' mi':'—')+'</td></tr>').join('');
  $('dailyCost').textContent=activeDays?'£'+format(plannedCost/activeDays):'—';
- $('weeklyMilesBudget').textContent=format(weeklyTemplateMiles,0)+' mi';
+ $('weeklyMilesBudget').textContent=format(plannedMiles,0)+' mi';
  $('weeklyLitres').textContent=format(weeklyLitres)+' L';
  $('weeklyCost').textContent='£'+format(weeklyCost);$('monthlyCost').textContent='£'+format(monthlyCost);
- report='Diesel Consumption Calculator v1.8\nRefill date: '+($('purchaseDate').value||'Not entered')+'\nPurchased: '+format(litres)+' L; range added: '+format(range,0)+' mi\n'+dates.map((date,i)=>displayDate(date)+': '+format(dailyMiles[i],1)+' mi; remaining: '+format(remaining[i],1)+' mi').join('\n')+'\n7-day planned mileage: '+format(plannedMiles,1)+' mi\nTypical weekly fuel spend: £'+format(weeklyCost)+'\nTypical monthly fuel spend: £'+format(monthlyCost);
+ report='Diesel Consumption Calculator v1.9\nRefill date: '+($('purchaseDate').value||'Not entered')+'\nPurchased: '+format(litres)+' L; range added: '+format(range,0)+' mi\n'+dates.map((date,i)=>displayDate(date)+': '+format(dailyMiles[i],1)+' mi; remaining: '+format(remaining[i],1)+' mi').join('\n')+'\n7-day planned mileage: '+format(plannedMiles,1)+' mi\nEstimated 7-day fuel spend: £'+format(weeklyCost)+'\nEstimated monthly spend if repeated: £'+format(monthlyCost);
 }
 $('purchaseDate').value=today();
 $('purchaseDate').addEventListener('input',()=>{edits={};mileageRows();calculate()});
